@@ -1,35 +1,48 @@
 import sys
 
-# TODO: Determine when a song varies too much to calculate
-
-lines = []
 
 def avg(nums):
     return sum(nums) / len(nums)
 
+# TODO: Determine when a song varies too much to calculate
+
+lines = []
+
 with open(sys.argv[1], 'r') as filename:
     lines = filename.readlines()
 beats = [float(x) for x in lines]
-# Try subtracting first beat
-song_mins = (beats[-1] - beats[0]) / 60
+beat_count = len(beats)
+print "Beat count is ", beat_count
+
+# Try subtracting first beat to get a more accurate average
+# Any time in the song after the last beat is also skipped
+song_secs = beats[-1] - beats[0]
+print "Song is {} seconds long".format(song_secs)
+
+# Try tracking all beat differences and average of every 4 to balance out spikes
 beat_diffs = []
 avg_beat_diffs = []
 for i in xrange(1, len(beats)):
     beat_diffs.append(beats[i] - beats[i-1])
     if i % 4 == 0:
         avg_beat_diffs.append(sorted(beat_diffs[i-3:i+1])[1])
-print "First beat is at ", beats[0]
-print "Last beat is at ", beats[-1]
-print "Average difference is:"
-print sum(beat_diffs) / len(beat_diffs)
-print "Median difference is:"
-print sorted(beat_diffs)[len(beat_diffs) / 2]
+        
+print "Average of all differences is ", avg(beat_diffs)
+print "Average of average differences is ", avg(avg_beat_diffs)
+
+print "Median difference is: ", sorted(avg_beat_diffs)[len(avg_beat_diffs) / 2]
+
 num_diffs = len(avg_beat_diffs)
-#overall_avg = avg(avg_beat_diffs[num_diffs / 3: num_diffs - (num_diffs / 3)])
+med_avg = avg(avg_beat_diffs[num_diffs / 3: num_diffs - (num_diffs / 3)])
 overall_avg = avg(beat_diffs)
-print "The overall avg is ", overall_avg
-print "If we multiply the seconds by that average, we get ", beats[-1] * (1 - overall_avg)
-print "Song is {} minutes long".format(song_mins)
-print "There are {} beats in total, so that's {} bpm.".format(len(beats), len(beats) / song_mins)
+print "Average of median beat diffs is ", med_avg
+print "Average of all beat diffs is ", overall_avg
+
+beats_sec = 1 / med_avg
+#beats_sec = 1 / overall_avg
+
+print "Beats/sec is ", beats_sec
+
+print "That's {} bpm.".format(beats_sec * 60)
 
 

@@ -26,10 +26,21 @@ def score_accuracy(beat_set, bpm, offset=0):
     duration = int(beat_set[-1])
     # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     expected_beats = range(offset, duration + 1, beat_interval)
+    total_error = (expected_beats[0] - beats[0])**2
+    # TODO: This doesn't worry about if the beat has already been matched, fix that
+    beat_index = 1
+    for i in xrange(1, len(expected_beats)):
+        expected_beat = expected_beats[i]
+        while not(beat_set[beat_index-1] < expected_beat <= beat_set[beat_index]):
+            beat_index += 1
+        new_error = (beat_set[beat_index] - expected_beat)**2
+        #total_error += (beat_set[beat_index] - expected_beat)**2
+        print "After comparing beats {}, {}, and {}, adding error {}".format(beat_set[beat_index-1], expected_beat, beat_set[beat_index], new_error)
     print "Expected:"
     print expected_beats
     print "Actual:"
     print beat_set 
+    print total_error
 
 beat = 0
 beats = []
@@ -42,8 +53,4 @@ while beat is not None:
 beat_count = len(beats)
 print "Beat count is", beat_count
 
-# Try subtracting first beat to get a more accurate average
-# Any time in the song after the last beat is also skipped
-song_secs = beats[-1] - beats[0]
-#print "Song is {} seconds long".format(song_secs)
 score_accuracy(beats, 60)

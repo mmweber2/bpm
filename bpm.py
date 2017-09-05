@@ -49,6 +49,11 @@ def score_accuracy(beat_set, bpm, offset=0):
             total_error += new_error
             print "After comparing beats {}, {}, and {}, adding error {}".format(beat_set[rb_index-1], expected_beat, beat_set[rb_index], new_error)
             eb_index += 1
+        else:
+            print "Skipped beat ", beat_set[rb_index]
+            total_error += (beat_set[rb_index] - beat_set[rb_index - 1])**2
+            # TODO: How to score skipped beats?
+            # Temporarily, I'll use (skipped beat) - (previous beat) squared
         # Advance the beat we're comparing to whether or not we found one
         rb_index += 1
     print "Expected:"

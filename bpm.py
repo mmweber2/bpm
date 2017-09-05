@@ -28,23 +28,34 @@ def score_accuracy(beat_set, bpm, offset=0):
     expected_beats = range(offset, duration + 1, beat_interval)
     total_error = (expected_beats[0] - beats[0])**2
     # TODO: The same beat can no longer be used twice, but experiment with a smarter way to match beats
-    real_beat_index = 1
-    expected_beat_index = 1
-    while real_beat_index < len(beat_set):
-        expected_beat = expected_beats[expected_beat_index]
-        if (beat_set[real_beat_index-1] < expected_beat <= beat_set[real_beat_index]):
-            new_error = (beat_set[real_beat_index] - expected_beat)**2
+    # Real beat index (from beat_set)
+    rb_index = 1
+    # Expected beat index
+    eb_index = 1
+    # TODO: Handle missed beats
+    while rb_index < len(beat_set):
+        expected_beat = expected_beats[eb_index]
+        if eb_index < len(expected_beats) - 1 and expected_beats[eb_index + 1] <= beat_set[rb_index]:
+            # Extra expected beat
+            # TODO: How to score extra beats?
+            new_error = min(expected_beat - beat_set[rb_index-1], beat_set[rb_index] - expected_beat)**2
+            print "Adding extra beat: ", new_error
+            total_error += new_error
+            eb_index += 1
+            continue
+        if (beat_set[rb_index-1] < expected_beat <= beat_set[rb_index]):
+            new_error = (beat_set[rb_index] - expected_beat)**2
             #total_error += (beat_set[beat_index] - expected_beat)**2
             total_error += new_error
-            print "After comparing beats {}, {}, and {}, adding error {}".format(beat_set[real_beat_index-1], expected_beat, beat_set[real_beat_index], new_error)
-            expected_beat_index += 1
+            print "After comparing beats {}, {}, and {}, adding error {}".format(beat_set[rb_index-1], expected_beat, beat_set[rb_index], new_error)
+            eb_index += 1
         # Advance the beat we're comparing to whether or not we found one
-        real_beat_index += 1
+        rb_index += 1
     print "Expected:"
     print expected_beats
     print "Actual:"
     print beat_set 
-    print total_error
+    print "Total error is ", total_error
 
 
 beat = 0

@@ -23,12 +23,17 @@ def score_accuracy(beat_set, bpm, offset=0):
     Returns:
         The sum of the squared errors for the beat set.
     '''
-    beat_interval = 60 / bpm
+    beat_interval = 60.0 / bpm
     # TODO: Find better way to get song duration
     duration = int(beat_set[-1])
     # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     # TODO: This only places integer beats
-    expected_beats = range(offset, duration + 1, beat_interval)
+    expected_beats = []
+    last_beat = offset
+    while last_beat < duration + 1:
+        new_beat = last_beat + beat_interval
+        expected_beats.append(new_beat)
+        last_beat = new_beat
     total_error = (expected_beats[0] - beats[0])**2
     # TODO: The same beat can no longer be used twice, but experiment with a smarter way to match beats
     # Real beat index (from beat_set)
@@ -103,4 +108,4 @@ while beat is not None:
 beat_count = len(beats)
 print "Beat count is", beat_count
 
-score_accuracy(beats, 60)
+score_accuracy(beats, 120)

@@ -7,6 +7,11 @@ from itertools import count
 # TODO: Start with greedy algorithm, then find better
 # TODO: Replace new_error (for troubleshooting) with increments to total_error
 # TODO: Break into smaller functions
+# TODO: Is there a better way to get the song duration?
+# TODO: Find a way to use count() to generate expected beats, but with the option
+#    to look at neighboring beats to find the closest one
+# TODO: Handle leftover beats in both sets at the end of loop
+# TODO: Do something with skipped and extra beats
 def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
     '''Scores a bpm given a set of beats.
 
@@ -26,9 +31,7 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
         The sum of the squared errors for the beat set.
     '''
     beat_interval = 60.0 / bpm
-    # TODO: Is there a better way to get the song duration?
     duration = int(beat_set[-1])
-    # TODO: Find a way to use count(), but with the option to look at neighboring beats to find the closest one
     # Aubio does not seem to detect beats in the first 3 seconds, so try this workaround
     last_beat = offset + 3.0
     expected_beats = []
@@ -37,17 +40,10 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
         expected_beats.append(last_beat)
         last_beat += beat_interval
     total_error = 0
-    # Real beat index (from beat_set)
-    rb_index = 1
-    # Expected beat index
-    eb_index = 1
-    # TODO: Handle leftover beats in both sets at the end of loop
-    # TODO: Do something with skipped and extra beats
-
-    # Beats in beat_set but not in expected
-    skipped_beats = []
-    # Beats in expected but not in beat_set
-    extra_beats = []
+    rb_index = 1 # Real beat index (from beat_set)
+    eb_index = 1 # Expected beat index
+    skipped_beats = [] # Beats in beat_set but not in expected
+    extra_beats = [] # Beats in expected but not in beat_set
     while rb_index < len(beat_set) and eb_index < len(expected_beats):
         expected_beat = expected_beats[eb_index]
         if eb_index < len(expected_beats) - 1 and expected_beats[eb_index + 1] <= beat_set[rb_index]:
@@ -70,21 +66,25 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
             if verbose: print "Found skipped beat ", beat_set[rb_index]
     return total_error
 
-def find_bpm(input_bpm, input_offset):
-    OFFSET_LIMIT = .5
-    BPM_VARIANCE = 1
+def find_bpm(start_bpm, start_offset):
+    """Returns the top scoring bpm and offset pairs for the given song."""
+    TOP_SCORES = 20
+    # FIXME: Set these back to 1 maybe
+    OFFSET_LIMIT = .2
+    BPM_VARIANCE = .2
     scores = []
     # TODO: Adjust starting points of bpm and offset?
-    for bpm in count(input_bpm - 2, .01):
-        for offset in count(input_offset - 1, .01):
+    for bpm in count(start_bpm - BPM_VARIANCE, .001):
+        for offset in count(start_offset - OFFSET_LIMIT, .01):
             total_error = score_accuracy(beats, bpm, offset)
             scores.append((total_error, bpm, offset))
-            if offset > input_offset + OFFSET_LIMIT: break
-        if bpm > input_bpm + BPM_VARIANCE: break
+            if offset > start_offset + OFFSET_LIMIT: break
+        if bpm > start_bpm + BPM_VARIANCE: break
     scores.sort()
-    return "\n".join(map(str, scores[:20]))
+    return "\n".join(map(str, scores[:TOP_SCORES]))
 
 def read_beats():
+    """Reads in a list of floating point beats from stdin."""
     beats = []
     while True:
         try:
@@ -96,9 +96,9 @@ def read_beats():
     return beats
 
 beats = read_beats()
-beat_count = len(beats)
-print "Beat count is", beat_count
-# 137, .168
+print "Beat count is", len(beats)
 input_bpm = float(sys.argv[1])
 input_offset = float(sys.argv[2])
+# Test a single BPM
+#print score_accuracy(beats, input_bpm, input_offset)
 print find_bpm(input_bpm, input_offset)

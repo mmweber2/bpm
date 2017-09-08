@@ -95,6 +95,16 @@ def read_beats():
     # Should not reach here, but just in case
     return beats
 
+def get_bpms(beat_set):
+    """Returns a sorted list of possible BPMs from a beat set."""
+    bpms = []
+    # Each possible BPM is calculated by the difference from the last beat
+    # 3.5 - 3.0 = .5: 60 / .5 = 120 BPM
+    for i in xrange(1, len(beat_set)):
+        bpms.append(60.0 / (beats[i] - beats[i-1]))
+    bpms.sort()
+    return bpms
+
 beats = read_beats()
 print "Beat count is", len(beats)
 input_bpm = float(sys.argv[1])

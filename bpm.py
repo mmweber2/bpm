@@ -5,13 +5,15 @@ from itertools import count
 # where (input) is a stdin list of beats
 
 # TODO: Start with greedy algorithm, then find better
-# TODO: Replace new_error (for troubleshooting) with increments to total_error
 # TODO: Break into smaller functions
 # TODO: Is there a better way to get the song duration?
 # TODO: Find a way to use count() to generate expected beats, but with the option
 #    to look at neighboring beats to find the closest one
 # TODO: Handle leftover beats in both sets at the end of loop
 # TODO: Do something with skipped and extra beats
+# TODO: If there are a large number of results, it would be possible to selection rank
+#    them and sort only the top K results, instead of the entire result set
+# TODO: Add error checking for highly variable BPMS (range is too large)
 def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
     '''Scores a bpm given a set of beats.
 
@@ -32,8 +34,8 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
     '''
     beat_interval = 60.0 / bpm
     duration = int(beat_set[-1])
-    # Aubio does not seem to detect beats in the first 3 seconds, so try this workaround
-    last_beat = offset + 3.0
+    # Aubio does not seem to detect beats in the first few seconds, so try this workaround
+    last_beat = offset# + 2.5044
     expected_beats = []
     # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     while last_beat <= duration:
@@ -48,7 +50,7 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
         expected_beat = expected_beats[eb_index]
         if eb_index < len(expected_beats) - 1 and expected_beats[eb_index + 1] <= beat_set[rb_index]:
             # Extra expected beat (or, a missing beat in beat_set),
-            #   because the next expected beat is closer to the next real beat than this one is
+            #   because the next expected beat is closer to the next real beat
             # This could happen if a real beat is not detected, or the bpm is way off.
             extra_beats.append(expected_beat)
             # Try to move eb_index closer to the next actual beat
@@ -66,7 +68,7 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
             if verbose: print "Found skipped beat ", beat_set[rb_index]
     return total_error
 
-def find_bpm(start_bpm, start_offset):
+def find_bpm(beats, start_bpm, start_offset):
     """Returns the top scoring bpm and offset pairs for the given song."""
     TOP_SCORES = 20
     # FIXME: Set these back to 1 maybe
@@ -74,12 +76,12 @@ def find_bpm(start_bpm, start_offset):
     BPM_VARIANCE = .2
     scores = []
     # TODO: Adjust starting points of bpm and offset?
-    for bpm in count(start_bpm - BPM_VARIANCE, .001):
-        for offset in count(start_offset - OFFSET_LIMIT, .01):
+    for offset in count(start_offset - OFFSET_LIMIT, .01):
+        for bpm in count(start_bpm - BPM_VARIANCE, .001):
             total_error = score_accuracy(beats, bpm, offset)
-            scores.append((total_error, bpm, offset))
-            if offset > start_offset + OFFSET_LIMIT: break
-        if bpm > start_bpm + BPM_VARIANCE: break
+            scores.append((total_error, ".5{}f".format(bpm), ".5{}f".format(offset)))
+            if bpm > start_bpm + BPM_VARIANCE: break
+        if offset > start_offset + OFFSET_LIMIT: break
     scores.sort()
     return "\n".join(map(str, scores[:TOP_SCORES]))
 
@@ -98,6 +100,7 @@ def read_beats():
 def get_bpms(beat_set):
     """Returns a sorted list of possible BPMs from a beat set."""
     bpms = []
+    offset = 0 - beat_set[0]
     # Each possible BPM is calculated by the difference from the last beat
     # 3.5 - 3.0 = .5: 60 / .5 = 120 BPM
     for i in xrange(1, len(beat_set)):
@@ -106,9 +109,10 @@ def get_bpms(beat_set):
     return bpms
 
 beats = read_beats()
-print "Beat count is", len(beats)
+#print "Beat count is", len(beats)
+start_bpm = get_bpms(beats)[int(len(beats) * .25)]
 input_bpm = float(sys.argv[1])
 input_offset = float(sys.argv[2])
-# Test a single BPM
-#print score_accuracy(beats, input_bpm, input_offset)
-print find_bpm(input_bpm, input_offset)
+#print find_bpm(beats, start_bpm, beats[0] - 2.5044)
+print find_bpm(beats, input_bpm, beats[0] - 2.5044)
+#print find_bpm(beats, input_bpm, input_offset)

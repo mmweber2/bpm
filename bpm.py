@@ -35,7 +35,7 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
     beat_interval = 60.0 / bpm
     duration = int(beat_set[-1])
     # Aubio does not seem to detect beats in the first few seconds, so try this workaround
-    last_beat = offset# + 2.5044
+    last_beat = offset
     expected_beats = []
     # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     while last_beat <= duration:
@@ -71,12 +71,13 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
 def find_bpm(beats, start_bpm, start_offset):
     """Returns the top scoring bpm and offset pairs for the given song."""
     TOP_SCORES = 20
-    OFFSET_LIMIT = 1
-    BPM_VARIANCE = 1
+    OFFSET_LIMIT = .5
+    BPM_VARIANCE = .5
     scores = []
-    # TODO: Adjust starting points of bpm and offset?
-    for offset in count(start_offset - OFFSET_LIMIT, .01):
-        for bpm in count(start_bpm - BPM_VARIANCE, .001):
+    # TODO: Is there a way to break at some offset or bpm if it's not improving?
+    # Per count() documentation, this format can lead to better floating point accuracy
+    for offset in (start_offset - OFFSET_LIMIT + .01 * i for i in count()):
+        for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
             total_error = score_accuracy(beats, bpm, offset)
             scores.append((total_error, "{:.5f}".format(bpm), "{:.5f}".format(offset)))
             if bpm > start_bpm + BPM_VARIANCE: break
@@ -108,10 +109,12 @@ def get_bpms(beat_set):
     return bpms
 
 beats = read_beats()
-#print "Beat count is", len(beats)
+# Choose 25% lowest BPM for start point
 start_bpm = get_bpms(beats)[int(len(beats) * .25)]
 # Detected difference for Aubio with hop limit 100
 offset = beats[0] - 2.5044
+print "Start BPM is ", start_bpm
+#print "Median BPM is ", get_bpms(beats)[int(len(beats) * .5)]
 print "Offset is ", offset
 input_bpm = float(sys.argv[1])
 input_offset = float(sys.argv[2])

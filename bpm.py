@@ -71,15 +71,14 @@ def score_accuracy(beat_set, bpm, offset=0.0, verbose=False):
 def find_bpm(beats, start_bpm, start_offset):
     """Returns the top scoring bpm and offset pairs for the given song."""
     TOP_SCORES = 20
-    # FIXME: Set these back to 1 maybe
-    OFFSET_LIMIT = .2
-    BPM_VARIANCE = .2
+    OFFSET_LIMIT = 1
+    BPM_VARIANCE = 1
     scores = []
     # TODO: Adjust starting points of bpm and offset?
     for offset in count(start_offset - OFFSET_LIMIT, .01):
         for bpm in count(start_bpm - BPM_VARIANCE, .001):
             total_error = score_accuracy(beats, bpm, offset)
-            scores.append((total_error, ".5{}f".format(bpm), ".5{}f".format(offset)))
+            scores.append((total_error, "{:.5f}".format(bpm), "{:.5f}".format(offset)))
             if bpm > start_bpm + BPM_VARIANCE: break
         if offset > start_offset + OFFSET_LIMIT: break
     scores.sort()
@@ -111,8 +110,11 @@ def get_bpms(beat_set):
 beats = read_beats()
 #print "Beat count is", len(beats)
 start_bpm = get_bpms(beats)[int(len(beats) * .25)]
+# Detected difference for Aubio with hop limit 100
+offset = beats[0] - 2.5044
+print "Offset is ", offset
 input_bpm = float(sys.argv[1])
 input_offset = float(sys.argv[2])
-#print find_bpm(beats, start_bpm, beats[0] - 2.5044)
-print find_bpm(beats, input_bpm, beats[0] - 2.5044)
+print find_bpm(beats, start_bpm, offset)
+#print find_bpm(beats, input_bpm, offset)
 #print find_bpm(beats, input_bpm, input_offset)

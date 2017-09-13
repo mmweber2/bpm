@@ -125,11 +125,11 @@ beats = read_beats()
 # Choose 25% lowest BPM for start point
 # Detected difference for Aubio with hop limit 100; remove if not using Aubio
 if len(sys.argv) > 1:
-    start_bpm = float(sys.argv[1])
-else:
-    start_bpm = get_bpms(beats)[int(len(beats) * .25)]
-if len(sys.argv) > 2:
-    offset = float(sys.argv[2])
+    offset = float(sys.argv[1])
 else:
     offset = beats[0] - 2.2
+if len(sys.argv) > 2:
+    start_bpm = float(sys.argv[2])
+else:
+    start_bpm = get_bpms(beats)[int(len(beats) * .25)]
 print find_bpm(beats, start_bpm, offset)

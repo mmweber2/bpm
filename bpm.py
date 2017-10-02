@@ -1,8 +1,12 @@
 import sys
 from itertools import count
 
-# Usage: python bpm.py (input) ()
-# where (input) is a stdin list of beats
+# Usage: python bpm.py (input) (offset) (bpm)
+#   where (input) is a stdin list of beats,
+#   (offset) is a float of the location (in seconds) at which
+#       the song starts, 
+#   and (bpm) is an estimated bpm.
+# (offset) and (bpm) are both optional.
 
 def score_accuracy(beat_set, bpm, offset=0.0):
     """Scores a bpm and offset pair for a given set of beats.

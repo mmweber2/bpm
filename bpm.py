@@ -1,7 +1,7 @@
 import sys
 from itertools import count
 
-# Usage: python bpm.py (input)
+# Usage: python bpm.py (input) ()
 # where (input) is a stdin list of beats
 
 def score_accuracy(beat_set, bpm, offset=0.0):
@@ -121,15 +121,19 @@ def get_bpms(beat_set):
     bpms.sort()
     return bpms
 
-beats = read_beats()
-# Choose 25% lowest BPM for start point
-# Detected difference for Aubio with hop limit 100; remove if not using Aubio
-if len(sys.argv) > 1:
-    offset = float(sys.argv[1])
-else:
-    offset = beats[0] - 2.2
-if len(sys.argv) > 2:
-    start_bpm = float(sys.argv[2])
-else:
-    start_bpm = get_bpms(beats)[int(len(beats) * .25)]
-print find_bpm(beats, start_bpm, offset)
+def main():
+    beats = read_beats()
+    if len(sys.argv) > 1:
+        offset = float(sys.argv[1])
+    else:
+        # Detected difference for Aubio with hop limit 100; remove if not using Aubio
+        offset = beats[0] - 2.2
+    if len(sys.argv) > 2:
+        start_bpm = float(sys.argv[2])
+    else:
+        # Choose 25% lowest BPM for start point
+        start_bpm = get_bpms(beats)[int(len(beats) * .25)]
+    print find_bpm(beats, start_bpm, offset)
+
+if __name__ == "__main__":
+    main()

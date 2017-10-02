@@ -117,7 +117,7 @@ def get_bpms(beat_set):
     # Each possible BPM is calculated by the difference from the last beat
     # 3.5 - 3.0 = .5: 60 / .5 = 120 BPM
     for i in xrange(1, len(beat_set)):
-        bpms.append(60.0 / (beats[i] - beats[i-1]))
+        bpms.append(60.0 / (beat_set[i] - beat_set[i-1]))
     bpms.sort()
     return bpms
 

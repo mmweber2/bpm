@@ -88,8 +88,12 @@ def find_bpm(beats, start_bpm, start_offset):
             to 5 digits after the decimal point.
     """
     TOP_SCORES = 20
-    OFFSET_LIMIT = .5
-    BPM_VARIANCE = 1
+    #OFFSET_LIMIT = .5 
+    # TODO: Fix after testing
+    OFFSET_LIMIT = .001
+    # TODO: Fix after testing
+    # BPM_VARIANCE = 1
+    BPM_VARIANCE = 0.05
     scores = []
     # Per count() documentation, this format can lead to better
     #      floating point accuracy than using a float step
@@ -100,7 +104,14 @@ def find_bpm(beats, start_bpm, start_offset):
             if bpm > start_bpm + BPM_VARIANCE: break
         if offset > start_offset + OFFSET_LIMIT: break
     scores.sort()
-    return "\n".join(map(str, scores[:TOP_SCORES]))
+    return _format_results(scores[:TOP_SCORES])
+
+def _format_results(results):
+    output = ""
+    for score, bpm, offset in results:
+        line = "\nBPM {} with offset {} (score: {})".format(bpm, offset, score)
+        output += line
+    return output
 
 def read_beats():
     """Reads in a list of floating point beats from stdin."""
@@ -129,11 +140,13 @@ def main():
     beats = read_beats()
     if len(sys.argv) > 1:
         offset = float(sys.argv[1])
+        print "Setting offset: ", offset
     else:
         # Detected difference for Aubio with hop limit 100; remove if not using Aubio
         offset = beats[0] - 2.2
     if len(sys.argv) > 2:
         start_bpm = float(sys.argv[2])
+        print "Setting start bpm: ", start_bpm
     else:
         # Choose 25% lowest BPM for start point
         start_bpm = get_bpms(beats)[int(len(beats) * .25)]

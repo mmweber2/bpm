@@ -14,18 +14,23 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     Given the bpm and offset, calculates the expected location for each beat,
     matches it to the closest unmatched beat, and adds the squared difference
     to the total error.
-    The lower the total error, the better a match the bpm for that beat set.
+    The lower the total error, the better the match the bpm for that beat set.
 
     Args:
         beat_set: List of floats, where each float in the list represents a
             detected or confirmed beat.
-        bpm: Float, the estimated bpm for the song.
+        bpm: Float, the estimated bpm for the song. Must be >= 0.
         offset: Float, the location (in seconds) at which the song starts.
             Defaults to 0.0.
 
     Returns:
         The sum of the squared errors for the beat set.
+
+    Raises:
+        ValueError: bpm is <= 0.
     """
+    if bpm <= 0:
+        raise ValueError("bpm must be greater than 0")
     duration = beat_set[-1]
     beat_interval = 60.0 / bpm
     expected_beats = []
@@ -34,11 +39,11 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     while last_beat <= duration:
         expected_beats.append(last_beat)
-        last_beat += beat_interval
+        # Offset floating point errors by rounding
+        last_beat = round(beat_interval + last_beat, 7)
     total_error = 0
     rb_index = 1 # Real beat index (from beat_set)
     eb_index = 1 # Expected beat index
-    print "Expected beats are ", expected_beats
     while rb_index < len(beat_set) and eb_index < len(expected_beats):
         expected_beat = expected_beats[eb_index]
         if (eb_index < len(expected_beats) - 1 and

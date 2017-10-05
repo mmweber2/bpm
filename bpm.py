@@ -114,8 +114,10 @@ def _format_results(results):
     return output
 
 def read_beats():
-    """Reads in a list of floating point beats from stdin.
+    """Reads in a list of beats from stdin.
     
+    Returns: A list of floats representing beats.
+
     Raises:
         ValueError: one or more beats cannot be converted to a float.
     """
@@ -130,13 +132,25 @@ def read_beats():
     return beats
 
 def get_bpms(beat_set):
-    """Returns a sorted list of possible BPMs from a beat set."""
+    """Returns a sorted list of possible BPMs from a beat set.
+
+    If beat_set contains less than two unique values, returns an empty list.
+    
+    Input:
+        beat_set: a sorted (increasing) list of floats representing beats.
+
+    Returns:
+        A list of estimated floating point BPM values, sorted in increasing order.
+    """
     bpms = []
-    offset = 0 - beat_set[0]
     # Each possible BPM is calculated by the difference from the last beat
     # 3.5 - 3.0 = .5: 60 / .5 = 120 BPM
     for i in xrange(1, len(beat_set)):
-        bpms.append(60.0 / (beat_set[i] - beat_set[i-1]))
+        beat_difference = beat_set[i] - beat_set[i-1]
+        if beat_difference == 0:
+            # This should not happen normally, but may mean the data is flawed
+            continue
+        bpms.append(60.0 / beat_difference)
     bpms.sort()
     return bpms
 

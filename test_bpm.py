@@ -84,7 +84,55 @@ def test_get_bpms_unique_beats_different_bpms():
     beats = [0.2, 0.5, 0.7, 0.85]
     assert_equals(bpm.get_bpms(beats), [200.0, 300.0, 400.0])
 
+# Tests for score_accuracy
+def test_score_accuracy_below_one():
+    # Test above and below 1 to guard against a bug where the latest
+    #   beat was rounded down to 0, causing an empty expected beat list
+    beats = [0.2, 0.5, 0.7, 0.85]
+    # Rather than testing for a specific score, try to find a score
+    #    that makes sense
+    assert bpm.score_accuracy(beats, 200.0) > 0
+    assert bpm.score_accuracy(beats, 300.0) > 0
+    assert bpm.score_accuracy(beats, 400.0) > 0
+
+def test_score_accuracy_above_one():
+    beats = [1.2, 2.5, 3.7, 4.85]
+    assert bpm.score_accuracy(beats, 200.0) > 0
+    assert bpm.score_accuracy(beats, 300.0) > 0
+    assert bpm.score_accuracy(beats, 400.0) > 0
+
+def test_score_accuracy_relative():
+    # BPM should be 200.0
+    beats = [0.2, 0.5, 0.8]
+    assert bpm.score_accuracy(beats, 200.0) > bpm.score_accuracy(beats, 150.0)
+
+def test_score_accuracy_accurate_bpm():
+    # BPM should be 60.0
+    beats = [1, 2, 3]
+    assert_equals(bpm.score_accuracy(beats, 60), 0)
+
+def test_score_accuracy_slow_bpm():
+    # BPM should be 60.0
+    beats = range(10)
+    assert_equals(bpm.score_accuracy(beats, 30), 0)
+
+def test_score_accuracy_zero_bpm():
+    beats = [0.2, 0.5, 0.8]
+    assert_raises(ValueError, bpm.score_accuracy, beats, 0)
+
+def test_score_accuracy_negative_bpm():
+    beats = [0.2, 0.5, 0.8]
+    assert_raises(ValueError, bpm.score_accuracy, beats, -10)
+
+def test_score_accuracy_too_large_offset():
+    beats = [0.2, 0.5, 0.8]
+    assert_raises(ValueError, bpm.score_accuracy, beats, 200, 1)
+
+
 # Test:
+# Find_bpm
+# Score accuracy
+# Main() and __main__
 # No bpm given
 # 0 bpm given
 # BPM that ranges over 0

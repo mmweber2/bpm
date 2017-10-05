@@ -3,20 +3,28 @@ import bpm
 from mock import patch
 from nose.tools import assert_equals
 
-#@patch('__builtin__.raw_input')
-#def test_no_beats(test_mock):
-#    test_mock.return_value = "cat empty_file.txt"
-#    print bpm.main()
+# Read beats expects a list of stdin beats, plus an EOFError
+def simulate_beat_input(beats):
+    for beat in beats:
+        yield float(beat)
+    raise EOFError()
 
+# TODO: Use simulate_beat_input
 @patch('__builtin__.raw_input')
-def test_no_beats_from_stdin(test_mock):
+def test_read_beats_no_beats(test_mock):
     test_mock.side_effect = EOFError()
     assert_equals(bpm.read_beats(), [])
+
+@patch('__builtin__.raw_input')
+def test_single_beat_from_stdin(test_mock):
+    test_mock.side_effect = simulate_beat_input(["0.2"])
+    assert_equals(bpm.read_beats(), [0.2])
     
 # Test:
-# No beats
+# No beats (from file?)
 # 1 beat
 # 2 beats
+# Non-float beat(s)
 # Some beats are the same
 # All beats are the same
 # No bpm given

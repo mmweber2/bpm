@@ -179,7 +179,8 @@ def main():
         print "No beats found."
         return
     if len(sys.argv) > 1:
-        offset = float(sys.argv[1])
+        # User-supplied offsets are negative or zero by convention
+        offset = 0 - float(sys.argv[1])
         print "Setting offset: ", offset
     else:
         # Detected difference for Aubio with hop limit 100; remove if not using Aubio

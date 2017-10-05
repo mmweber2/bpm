@@ -26,7 +26,7 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     Returns:
         The sum of the squared errors for the beat set.
     """
-    duration = int(beat_set[-1])
+    duration = beat_set[-1]
     beat_interval = 60.0 / bpm
     expected_beats = []
     # Latest beat (to start, this is just the location of the first beat)
@@ -38,6 +38,7 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     total_error = 0
     rb_index = 1 # Real beat index (from beat_set)
     eb_index = 1 # Expected beat index
+    print "Expected beats are ", expected_beats
     while rb_index < len(beat_set) and eb_index < len(expected_beats):
         expected_beat = expected_beats[eb_index]
         if (eb_index < len(expected_beats) - 1 and

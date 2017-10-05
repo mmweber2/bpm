@@ -6,7 +6,7 @@ from nose.tools import assert_equals
 # Read beats expects a list of stdin beats, plus an EOFError
 def simulate_beat_input(beats):
     for beat in beats:
-        yield float(beat)
+        yield beat
     raise EOFError()
 
 @patch('__builtin__.raw_input')
@@ -19,9 +19,12 @@ def test_read_beats_single_beat(test_mock):
     test_mock.side_effect = simulate_beat_input(["0.2"])
     assert_equals(bpm.read_beats(), [0.2])
     
+@patch('__builtin__.raw_input')
+def test_read_beats_two_beats(test_mock):
+    test_mock.side_effect = simulate_beat_input(["0.2", "1.5"])
+    assert_equals(bpm.read_beats(), [0.2, 1.5])
+
 # Test:
-# No beats (from file?)
-# 1 beat
 # 2 beats
 # Non-float beat(s)
 # Some beats are the same

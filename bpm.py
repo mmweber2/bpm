@@ -21,7 +21,7 @@ def score_accuracy(beat_set, bpm, offset=0.0):
             detected or confirmed beat.
         bpm: Float, the estimated bpm for the song. Must be >= 0.
         offset: Float, the location (in seconds) at which the song starts.
-            Defaults to 0.0.
+            Defaults to 0.0. Must be less than the last beat of beat_set.
 
     Returns:
         The sum of the squared errors for the beat set.
@@ -32,6 +32,10 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     if bpm <= 0:
         raise ValueError("bpm must be greater than 0")
     duration = beat_set[-1]
+    if duration <= offset:
+        # If offset is >= duration, there will be no beats to compare,
+        #    causing an erroneous 0.0 return
+        raise ValueError("No beats found after offset")
     beat_interval = 60.0 / bpm
     expected_beats = []
     # Latest beat (to start, this is just the location of the first beat)

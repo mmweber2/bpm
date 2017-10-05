@@ -114,7 +114,11 @@ def _format_results(results):
     return output
 
 def read_beats():
-    """Reads in a list of floating point beats from stdin."""
+    """Reads in a list of floating point beats from stdin.
+    
+    Raises:
+        ValueError: one or more beats cannot be converted to a float.
+    """
     beats = []
     while True:
         try:
@@ -138,6 +142,9 @@ def get_bpms(beat_set):
 
 def main():
     beats = read_beats()
+    if not beats:
+        print "No beats found."
+        return
     if len(sys.argv) > 1:
         offset = float(sys.argv[1])
         print "Setting offset: ", offset

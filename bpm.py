@@ -141,6 +141,9 @@ def get_bpms(beat_set):
 
     Returns:
         A list of estimated floating point BPM values, sorted in increasing order.
+
+    Raises:
+        ValueError: beat_set is not in increasing order.
     """
     bpms = []
     # Each possible BPM is calculated by the difference from the last beat
@@ -154,6 +157,8 @@ def get_bpms(beat_set):
         if beat_difference <= 0:
             # This should not happen normally, but may mean the data is flawed
             raise ValueError("Beats not in increasing order")
+        elif beat_difference > round(beat_set[i], 7):
+            raise ValueError("Beats may not be negative")
         bpm = 60.0 / beat_difference
         if bpm not in seen_bpms:
             bpms.append(bpm)

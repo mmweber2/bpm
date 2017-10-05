@@ -10,6 +10,7 @@ def simulate_beat_input(beats):
         yield beat
     raise EOFError()
 
+# Tests for read_beats
 @patch('__builtin__.raw_input')
 def test_read_beats_no_beats(test_mock):
     test_mock.side_effect = simulate_beat_input([])
@@ -34,6 +35,19 @@ def test_read_beats_non_float_beat(test_mock):
 def test_read_beats_float_and_non_float_beats(test_mock):
     test_mock.side_effect = simulate_beat_input(["0.5", "1", "s"])
     assert_raises(ValueError, bpm.read_beats)
+
+# Test get_bpms
+def test_get_bpms_empty():
+    beats = []
+    assert_equals(bpm.get_bpms(beats), [])
+
+def test_get_bpms_one_beat():
+    beats = [1.0]
+    assert_equals(bpm.get_bpms(beats), [])
+
+def test_get_bpms_duplicate_beats():
+    beats = [0.2, 0.2]
+    assert_equals(bpm.get_bpms(beats), [])
 
 # Test:
 # Some beats are the same

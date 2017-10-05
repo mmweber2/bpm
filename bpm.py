@@ -38,9 +38,6 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     total_error = 0
     rb_index = 1 # Real beat index (from beat_set)
     eb_index = 1 # Expected beat index
-    # The following lists are kept for reference only, with no effect on score
-    skipped_beats = [] # Beats in beat_set but not in expected
-    extra_beats = [] # Beats in expected but not in beat_set
     while rb_index < len(beat_set) and eb_index < len(expected_beats):
         expected_beat = expected_beats[eb_index]
         if (eb_index < len(expected_beats) - 1 and
@@ -49,7 +46,6 @@ def score_accuracy(beat_set, bpm, offset=0.0):
             #   because the next expected beat is closer to the next real beat.
             # This could happen if a real beat is not detected,
             #   or the bpm is way off.
-            extra_beats.append(expected_beat)
             # Try to move eb_index closer to the next actual beat
             eb_index += 1
             continue
@@ -60,7 +56,6 @@ def score_accuracy(beat_set, bpm, offset=0.0):
               rb_index += 1
         else:
             # A beat in beat_set is not accounted for in expected_beats
-            skipped_beats.append(beat_set[rb_index])
             rb_index += 1
     # Disregard any leftover beats in either set.
     return total_error
@@ -101,8 +96,10 @@ def find_bpm(beats, start_bpm, start_offset):
         for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
             total_error = score_accuracy(beats, bpm, offset)
             scores.append((total_error, "{:.5f}".format(bpm), "{:.5f}".format(offset)))
-            if bpm > start_bpm + BPM_VARIANCE: break
-        if offset > start_offset + OFFSET_LIMIT: break
+            if bpm > start_bpm + BPM_VARIANCE:
+                break
+        if offset > start_offset + OFFSET_LIMIT:
+            break
     scores.sort()
     return _format_results(scores[:TOP_SCORES])
 

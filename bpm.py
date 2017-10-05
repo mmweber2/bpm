@@ -145,12 +145,19 @@ def get_bpms(beat_set):
     bpms = []
     # Each possible BPM is calculated by the difference from the last beat
     # 3.5 - 3.0 = .5: 60 / .5 = 120 BPM
+    seen_bpms = set()
     for i in xrange(1, len(beat_set)):
-        beat_difference = beat_set[i] - beat_set[i-1]
-        if beat_difference == 0:
+        # Due to Python floating point errors, the same beat difference may
+        #    be represented slightly differently, so round to 7 decimal places.
+        # This should be sufficient to maintain accuracy yet avoid the errors.
+        beat_difference = round(beat_set[i] - beat_set[i-1], 7)
+        if beat_difference <= 0:
             # This should not happen normally, but may mean the data is flawed
-            continue
-        bpms.append(60.0 / beat_difference)
+            raise ValueError("Beats not in increasing order")
+        bpm = 60.0 / beat_difference
+        if bpm not in seen_bpms:
+            bpms.append(bpm)
+            seen_bpms.add(bpm)
     bpms.sort()
     return bpms
 

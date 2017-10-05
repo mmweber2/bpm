@@ -18,7 +18,7 @@ def score_accuracy(beat_set, bpm, offset=0.0):
 
     Args:
         beat_set: List of floats, where each float in the list represents a
-            detected or confirmed beat.
+            detected or confirmed beat. Must not be empty.
         bpm: Float, the estimated bpm for the song. Must be >= 0.
         offset: Float, the location (in seconds) at which the song starts.
             Defaults to 0.0. Must be less than the last beat of beat_set.
@@ -27,8 +27,11 @@ def score_accuracy(beat_set, bpm, offset=0.0):
         The sum of the squared errors for the beat set.
 
     Raises:
-        ValueError: bpm is <= 0.
+        ValueError: bpm is <= 0, offset is >= the last beat, or
+            beat_set is empty.
     """
+    if not beat_set:
+        raise ValueError("beat_set must not be empty")
     if bpm <= 0:
         raise ValueError("bpm must be greater than 0")
     duration = beat_set[-1]
@@ -79,7 +82,7 @@ def find_bpm(beats, start_bpm, start_offset):
     Args:
         beats: List of floats, where each float in the list represents a
             detected or confirmed beat.
-        start_bpm: Float, the middle of the BPM range to search.
+        start_bpm: Float, the middle of the BPM range to search. Must be >= 0.
         start_offset: Float, the middle of the possible locations (in seconds)
             for which to search for an offset.
         
@@ -91,6 +94,9 @@ def find_bpm(beats, start_bpm, start_offset):
             are at the top of the list.
         bpm and offset are enclosed in single quotes, and truncated
             to 5 digits after the decimal point.
+
+    Raises:
+        ValueError: bpm is <= 0 or offset < 0.
     """
     TOP_SCORES = 20
     #OFFSET_LIMIT = .5 
@@ -103,7 +109,11 @@ def find_bpm(beats, start_bpm, start_offset):
     # Per count() documentation, this format can lead to better
     #      floating point accuracy than using a float step
     for offset in (start_offset - OFFSET_LIMIT + .01 * i for i in count()):
+        if offset < 0:
+            continue
         for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
+            if bpm <= 0:
+                continue
             total_error = score_accuracy(beats, bpm, offset)
             scores.append((total_error, "{:.5f}".format(bpm), "{:.5f}".format(offset)))
             if bpm > start_bpm + BPM_VARIANCE:

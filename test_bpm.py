@@ -9,14 +9,13 @@ def simulate_beat_input(beats):
         yield float(beat)
     raise EOFError()
 
-# TODO: Use simulate_beat_input
 @patch('__builtin__.raw_input')
 def test_read_beats_no_beats(test_mock):
-    test_mock.side_effect = EOFError()
+    test_mock.side_effect = simulate_beat_input([])
     assert_equals(bpm.read_beats(), [])
 
 @patch('__builtin__.raw_input')
-def test_single_beat_from_stdin(test_mock):
+def test_read_beats_single_beat(test_mock):
     test_mock.side_effect = simulate_beat_input(["0.2"])
     assert_equals(bpm.read_beats(), [0.2])
     

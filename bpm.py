@@ -96,7 +96,7 @@ def find_bpm(beats, start_bpm, start_offset):
             to 5 digits after the decimal point.
 
     Raises:
-        ValueError: bpm is <= 0 or offset < 0.
+        ValueError: bpm is <= 0, start_offset < 0, or beats is empty.
     """
     TOP_SCORES = 20
     #OFFSET_LIMIT = .5 
@@ -108,14 +108,18 @@ def find_bpm(beats, start_bpm, start_offset):
     scores = []
     # Per count() documentation, this format can lead to better
     #      floating point accuracy than using a float step
+    print "Start offset is ", start_offset
+    if start_offset < 0:
+        raise ValueError("Offset must be >= 0")
     for offset in (start_offset - OFFSET_LIMIT + .01 * i for i in count()):
         if offset < 0:
+            # It's possible to have a valid offset (such as 0) that dips below 0
             continue
         for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
             if bpm <= 0:
                 continue
             total_error = score_accuracy(beats, bpm, offset)
-            scores.append((total_error, "{:.5f}".format(bpm), "{:.5f}".format(offset)))
+            scores.append((total_error, bpm, offset))
             if bpm > start_bpm + BPM_VARIANCE:
                 break
         if offset > start_offset + OFFSET_LIMIT:

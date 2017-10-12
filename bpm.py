@@ -43,7 +43,6 @@ def score_accuracy(beat_set, bpm, offset=0.0):
     expected_beats = []
     # Latest beat (to start, this is just the location of the first beat)
     last_beat = offset
-    # If bpm is 30 and offset is 0, this should place beats at 2, 4, 6, etc
     while last_beat <= duration:
         expected_beats.append(last_beat)
         # Offset floating point errors by rounding
@@ -70,7 +69,7 @@ def score_accuracy(beat_set, bpm, offset=0.0):
         else:
             # A beat in beat_set is not accounted for in expected_beats
             rb_index += 1
-    # Disregard any leftover beats in either set.
+    # Disregard any leftover beats in either set
     return total_error
 
 def find_bpm(beats, start_bpm, start_offset):
@@ -78,6 +77,8 @@ def find_bpm(beats, start_bpm, start_offset):
 
     Examines BPMs and offsets in the space around the start values to find
         the most likely BPM/offset pair.
+    Since a score of 0.0 is far more likely to be the result of insufficient
+        data than a 100% perfect match, scores of 0.0 are discarded.
 
     Args:
         beats: List of floats, where each float in the list represents a
@@ -91,7 +92,7 @@ def find_bpm(beats, start_bpm, start_offset):
             the calculated error for that bpm/offset pairing and bpm and offset
             are the values to achieve that score.
         Results are sorted by increasing score, so the best-ranked results
-            are at the top of the list.
+            are at the beginning of the string.
         bpm and offset are enclosed in single quotes, and truncated
             to 5 digits after the decimal point.
 
@@ -106,20 +107,22 @@ def find_bpm(beats, start_bpm, start_offset):
     # BPM_VARIANCE = 1
     BPM_VARIANCE = 0.05
     scores = []
-    # Per count() documentation, this format can lead to better
-    #      floating point accuracy than using a float step
-    print "Start offset is ", start_offset
     if start_offset < 0:
         raise ValueError("Offset must be >= 0")
+    # Per count() documentation, this format can lead to better
+    #      floating point accuracy than using a float step
     for offset in (start_offset - OFFSET_LIMIT + .01 * i for i in count()):
         if offset < 0:
-            # It's possible to have a valid offset (such as 0) that dips below 0
+            # It's possible to have a valid start_offset (such as 0)
+            #     that dips below 0
             continue
         for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
             if bpm <= 0:
+                # It's possible to have a valid start bpm that reaches 0
                 continue
             total_error = score_accuracy(beats, bpm, offset)
-            scores.append((total_error, bpm, offset))
+            if total_error != 0:
+                scores.append((total_error, bpm, offset))
             if bpm > start_bpm + BPM_VARIANCE:
                 break
         if offset > start_offset + OFFSET_LIMIT:

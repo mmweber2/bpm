@@ -85,6 +85,10 @@ def test_get_bpms_unique_beats_different_bpms():
     assert_equals(bpm.get_bpms(beats), [200.0, 300.0, 400.0])
 
 # Tests for score_accuracy
+
+def test_score_accuracy_no_beats():
+    assert_raises(ValueError, bpm.score_accuracy, [], 60)
+
 def test_score_accuracy_below_one():
     # Test above and below 1 to guard against a bug where the latest
     #   beat was rounded down to 0, causing an empty expected beat list
@@ -128,10 +132,18 @@ def test_score_accuracy_too_large_offset():
     beats = [0.2, 0.5, 0.8]
     assert_raises(ValueError, bpm.score_accuracy, beats, 200, 1)
 
+# Tests for find_bpm
+
+def test_find_bpm_zero_bpm():
+    #assert_raises(ValueError, bpm.find_bpm, range(5), 0, 0)
+    print bpm.find_bpm(range(5), 0, 0)
+
+def test_find_bpm_negative_offset():
+    assert_raises(ValueError, bpm.find_bpm, range(5), 60, -10)
+
 
 # Test:
 # Find_bpm
-# Score accuracy
 # Main() and __main__
 # No bpm given
 # 0 bpm given

@@ -135,8 +135,7 @@ def test_score_accuracy_too_large_offset():
 # Tests for find_bpm
 
 def test_find_bpm_zero_bpm():
-    #assert_raises(ValueError, bpm.find_bpm, range(5), 0, 0)
-    print bpm.find_bpm(range(5), 0, 0)
+    assert_raises(ValueError, bpm.find_bpm, range(5), 0, 0)
 
 def test_find_bpm_negative_offset():
     assert_raises(ValueError, bpm.find_bpm, range(5), 60, -10)

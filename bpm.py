@@ -108,7 +108,12 @@ def find_bpm(beats, start_bpm, start_offset):
     BPM_VARIANCE = 0.05
     scores = []
     if start_offset < 0:
-        raise ValueError("Offset must be >= 0")
+        raise ValueError("start_offset must be >= 0")
+    # While it is technically possible for something to have a bpm near 0,
+    #    the beats would have to be at least a minute apart, which does not
+    #    make sense for music.
+    if start_bpm <= 0:
+        raise ValueError("start_bpm must be > 0")
     # Per count() documentation, this format can lead to better
     #      floating point accuracy than using a float step
     for offset in (start_offset - OFFSET_LIMIT + .01 * i for i in count()):

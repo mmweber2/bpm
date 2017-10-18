@@ -97,14 +97,15 @@ def find_bpm(beats, start_bpm, start_offset):
             to 5 digits after the decimal point.
 
     Raises:
-        ValueError: bpm is <= 0, start_offset < 0, or beats is empty.
+        ValueError: start_bpm is <= 0, start_offset < 0, or beats is empty.
+
+        TypeError: start_bpm is not a valid number.
     """
     TOP_SCORES = 20
-    #OFFSET_LIMIT = .5 
+    OFFSET_LIMIT = .5 
     # TODO: Fix after testing
-    OFFSET_LIMIT = .001
-    # TODO: Fix after testing
-    # BPM_VARIANCE = 1
+    # If increasing BPM_VARIANCE, add a check for BPMs <= 0.
+    BPM_VARIANCE = 1
     BPM_VARIANCE = 0.05
     scores = []
     if start_offset < 0:
@@ -122,9 +123,6 @@ def find_bpm(beats, start_bpm, start_offset):
             #     that dips below 0
             continue
         for bpm in (start_bpm - BPM_VARIANCE + .001 * i for i in count()):
-            if bpm <= 0:
-                # It's possible to have a valid start bpm that reaches 0
-                continue
             total_error = score_accuracy(beats, bpm, offset)
             if total_error != 0:
                 scores.append((total_error, bpm, offset))
@@ -157,8 +155,6 @@ def read_beats():
         except EOFError:
             return beats
         beats.append(float(beat))
-    # Should not reach here, but just in case
-    return beats
 
 def get_bpms(beat_set):
     """Returns a sorted list of possible BPMs from a beat set.

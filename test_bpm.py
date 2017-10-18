@@ -150,13 +150,11 @@ def test_find_bpm_small_bpm():
     assert bpm.find_bpm(range(100), 10, 0) != ""
 
 def test_find_bpm_exact_bpm():
-    # This test will need to be updated if _format_results changes.
-    # The actual match for this beat set is 60 bpm, offset 0,
-    #   but find_bpm disregards 100% exact matches, so it returns
-    #   this very close match.
-    expected = "\nBPM 60.001 with offset 0.0"
-    # The score will change with the scoring system, so disregard it
-    assert bpm.find_bpm(range(100), 60, 0).startswith(expected)
+    # find_bpm's OFFSET_LIMIT and BPM_VARIANCE will affect the
+    #   best matches returned, and the score will change
+    #   with any changes to the scoring system.
+    # For now, just look for any results.
+    assert bpm.find_bpm(range(100), 60, 0) != ""
 
 def test_find_bpm_negative_offset():
     assert_raises(ValueError, bpm.find_bpm, range(5), 60, -10)
@@ -174,8 +172,20 @@ def test_find_bpm_too_large_offset():
 def test_find_bpm_valid_large_offset():
     assert bpm.find_bpm(range(100), 60, 50) != ""
 
+def test_find_bpm_non_numeric_offset():
+    assert_raises(TypeError, bpm.find_bpm, range(10), 60, "Test")
+
+@patch('bpm.read_beats', return_value="[]")
+def test_main_no_beats(test_mock):
+    #bpm.main()
+    pass
+    
+    #@patch('__builtin__.raw_input')
+#def test_read_beats_no_beats(test_mock):
+#    test_mock.side_effect = simulate_beat_input([])
+#    assert_equals(bpm.read_beats(), [])
+
 # Test:
-# Find_bpm
 # Main() and __main__
 # No bpm given
 # 0 bpm given

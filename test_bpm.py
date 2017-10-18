@@ -164,10 +164,15 @@ def test_find_bpm_negative_offset():
 # Zero offset is the default and is tested by some of the above tests
 
 def test_find_bpm_small_offset():
-    pass
+    # This is a possible offset that should return valid results
+    assert bpm.find_bpm(range(100), 60, .0000001) != ""
 
-def test_find_bpm_large_offset():
-    pass
+def test_find_bpm_too_large_offset():
+    # Offset is larger than last beat
+    assert_raises(ValueError, bpm.find_bpm, range(100), 60, 100)
+
+def test_find_bpm_valid_large_offset():
+    assert bpm.find_bpm(range(100), 60, 50) != ""
 
 # Test:
 # Find_bpm

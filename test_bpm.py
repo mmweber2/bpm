@@ -112,8 +112,10 @@ def test_score_accuracy_relative():
 
 def test_score_accuracy_accurate_bpm():
     # BPM should be 60.0
-    beats = [1, 2, 3]
+    beats = [1, 2, 3, 4, 5]
     assert_equals(bpm.score_accuracy(beats, 60), 0)
+
+# TODO: Add test for multiple of exact bpm
 
 def test_score_accuracy_slow_bpm():
     # BPM should be 60.0
@@ -137,9 +139,35 @@ def test_score_accuracy_too_large_offset():
 def test_find_bpm_zero_bpm():
     assert_raises(ValueError, bpm.find_bpm, range(5), 0, 0)
 
+def test_find_bpm_negative_bpm():
+    assert_raises(ValueError, bpm.find_bpm, range(5), -100, 0)
+
+def test_find_bpm_non_numeric_bpm():
+    assert_raises(TypeError, bpm.find_bpm, range(10), "Test", 0)
+
+def test_find_bpm_small_bpm():
+    # This is a possible bpm that should return valid results
+    assert bpm.find_bpm(range(100), 10, 0) != ""
+
+def test_find_bpm_exact_bpm():
+    # This test will need to be updated if _format_results changes.
+    # The actual match for this beat set is 60 bpm, offset 0,
+    #   but find_bpm disregards 100% exact matches, so it returns
+    #   this very close match.
+    expected = "\nBPM 60.001 with offset 0.0"
+    # The score will change with the scoring system, so disregard it
+    assert bpm.find_bpm(range(100), 60, 0).startswith(expected)
+
 def test_find_bpm_negative_offset():
     assert_raises(ValueError, bpm.find_bpm, range(5), 60, -10)
 
+# Zero offset is the default and is tested by some of the above tests
+
+def test_find_bpm_small_offset():
+    pass
+
+def test_find_bpm_large_offset():
+    pass
 
 # Test:
 # Find_bpm

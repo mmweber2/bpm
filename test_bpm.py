@@ -1,7 +1,5 @@
 from StringIO import StringIO
 import bpm
-import argparse
-import sys
 # Rolling backport of unittest.mock for Python 2
 from mock import patch
 from nose.tools import assert_equals
@@ -194,31 +192,39 @@ def is_valid_score(test_mock):
     #sys.stderr.write("Result was {}".format(test_mock.getvalue()))
     return test_mock.getvalue().startswith(expected)
 
+# The second argument to the functions is the mock for read_beats,
+#   but the mock argument itself isn't used.
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
-def test_main_no_args_given(print_mock, beats_mock):
+def test_main_no_args_given(print_mock, _):
     assert is_valid_score(print_mock)
     
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
-def test_main_negative_offset_given(print_mock, beat_mock):
+def test_main_negative_offset_given(print_mock, _):
     with patch('sys.argv', (None, "-10", "60")):
         assert is_valid_score(print_mock)
 
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
-def test_main_zero_offset_given(print_mock, beat_mock):
+def test_main_offset_given_without_bpm(print_mock, _):
+    with patch('sys.argv', (None, "0")):
+        assert is_valid_score(print_mock)
+
+@patch('bpm.read_beats', return_value=range(60))
+@patch('sys.stdout', new_callable=StringIO)
+def test_main_zero_offset_given(print_mock, _):
     with patch('sys.argv', (None, "0", "60")):
         assert is_valid_score(print_mock)
 
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
-def test_main_positive_offset_given(print_mock, beat_mock):
+def test_main_positive_offset_given(print_mock, _):
     with patch('sys.argv', (None, "5", "60")):
         assert is_valid_score(print_mock)
 
 @patch('bpm.read_beats', return_value=range(60))
-def test_main_non_float_offset_given(beat_mock):
+def test_main_non_float_offset_given(_):
     with patch('sys.argv', (None, "Test", "60")):
         assert_raises(ValueError, bpm.main)
 
@@ -226,15 +232,7 @@ def test_main_non_float_offset_given(beat_mock):
 #   and aren't checked in main()
 
 # Test this in main because there is a float conversion
-def test_main_non_float_bpm_given():
-    pass
-    
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument('0') # Offset
-    #parser.add_argument('60') # BPM
-
-# Test:
-# Main() and __main__
-# No bpm given
-# 0 bpm given
-# Irregular bpm song
+@patch('bpm.read_beats', return_value=range(60))
+def test_main_non_float_bpm_given(_):
+    with patch('sys.argv', (None, "0", "Test")):
+        assert_raises(ValueError, bpm.main)

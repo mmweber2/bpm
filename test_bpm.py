@@ -185,8 +185,11 @@ def test_main_no_beats(print_mock, beats_mock):
     assert_equals(print_mock.getvalue(), "No beats found.\n")
 
 @patch('bpm.read_beats', return_value=range(60))
-def test_main_no_args_given(_):
+@patch('sys.stdout', new_callable=StringIO)
+def test_main_no_args_given(print_mock, beats_mock):
     bpm.main()
+    expected = "\nBPM " # Valid start to any score list
+    assert print_mock.getvalue().startswith(expected)
     
     #@patch('__builtin__.raw_input')
 #def test_read_beats_no_beats(test_mock):

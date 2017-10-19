@@ -201,19 +201,21 @@ def main():
     test_mode = False
     if len(sys.argv) > 1 and sys.argv[1].startswith("--"):
         test_mode = True
-    if (len(sys.argv) > 1) and (not test_mode):
+    if (len(sys.argv) > 1) and not test_mode:
         # User-supplied offsets are negative or zero by convention
-        offset = 0 - float(sys.argv[1])
+        given_offset = float(sys.argv[1])
+        offset = max(given_offset, 0, 0 - given_offset)
         print "Setting offset: ", offset
     else:
         # Detected difference for Aubio with hop limit 100; remove if not using Aubio
-        offset = beats[0] - 2.2
+        offset = max(0, beats[0] - 2.2)
     if len(sys.argv) > 2 and not test_mode:
         start_bpm = float(sys.argv[2])
         print "Setting start bpm: ", start_bpm
     else:
         # Choose 25% lowest BPM for start point
-        start_bpm = get_bpms(beats)[int(len(beats) * .25)]
+        bpms = get_bpms(beats)
+        start_bpm = bpms[int(len(bpms) * .25)]
     print find_bpm(beats, start_bpm, offset)
 
 if __name__ == "__main__":

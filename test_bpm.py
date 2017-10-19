@@ -189,32 +189,38 @@ def is_valid_score(test_mock):
 
     Returns True iff the value begins with the expected value.
     '''
+    bpm.main()
     expected = "\nBPM " # Valid start to any score list
+    #sys.stderr.write("Result was {}".format(test_mock.getvalue()))
     return test_mock.getvalue().startswith(expected)
 
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
 def test_main_no_args_given(print_mock, beats_mock):
-    bpm.main()
     assert is_valid_score(print_mock)
     
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
-@patch('argparse.ArgumentParser.parse_args',
-       return_value=argparse.Namespace(offset=-10, bpm=50))
-def test_main_negative_offset_given(arg_mock, print_mock, beat_mock):
-    bpm.main()
-    expected = "\nBPM " # Valid start to any score list
-    assert print_mock.getvalue().startswith(expected)
+def test_main_negative_offset_given(print_mock, beat_mock):
+    with patch('sys.argv', (None, "-10", "60")):
+        assert is_valid_score(print_mock)
 
-def test_main_zero_offset_given():
-    pass
+@patch('bpm.read_beats', return_value=range(60))
+@patch('sys.stdout', new_callable=StringIO)
+def test_main_zero_offset_given(print_mock, beat_mock):
+    with patch('sys.argv', (None, "0", "60")):
+        assert is_valid_score(print_mock)
 
-def test_main_positive_offset_given():
-    pass
+@patch('bpm.read_beats', return_value=range(60))
+@patch('sys.stdout', new_callable=StringIO)
+def test_main_positive_offset_given(print_mock, beat_mock):
+    with patch('sys.argv', (None, "5", "60")):
+        assert is_valid_score(print_mock)
 
-def test_main_non_float_offset_given():
-    pass
+@patch('bpm.read_beats', return_value=range(60))
+def test_main_non_float_offset_given(beat_mock):
+    with patch('sys.argv', (None, "Test", "60")):
+        assert_raises(ValueError, bpm.main)
 
 # Zero, negative, and near-zero bpms are tested in find_bpm
 #   and aren't checked in main()

@@ -102,8 +102,9 @@ def find_bpm(beats, start_bpm, start_offset):
         TypeError: start_bpm is not a valid number.
     """
     TOP_SCORES = 20
-    OFFSET_LIMIT = .5 
     # TODO: Fix after testing
+    OFFSET_LIMIT = .5 
+    OFFSET_LIMIT = .001 
     # If increasing BPM_VARIANCE, add a check for BPMs <= 0.
     BPM_VARIANCE = 1
     BPM_VARIANCE = 0.05
@@ -196,14 +197,18 @@ def main():
     if not beats:
         print "No beats found."
         return
-    if len(sys.argv) > 1:
+    # Check arguments, but ignore test arguments
+    test_mode = False
+    if len(sys.argv) > 1 and sys.argv[1].startswith("--"):
+        test_mode = True
+    if (len(sys.argv) > 1) and (not test_mode):
         # User-supplied offsets are negative or zero by convention
         offset = 0 - float(sys.argv[1])
         print "Setting offset: ", offset
     else:
         # Detected difference for Aubio with hop limit 100; remove if not using Aubio
         offset = beats[0] - 2.2
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 2 and not test_mode:
         start_bpm = float(sys.argv[2])
         print "Setting start bpm: ", start_bpm
     else:

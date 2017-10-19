@@ -184,17 +184,45 @@ def test_main_no_beats(print_mock, beats_mock):
     bpm.main()
     assert_equals(print_mock.getvalue(), "No beats found.\n")
 
+def is_valid_score(test_mock):
+    '''Checks the mock's value against the expected score.
+
+    Returns True iff the value begins with the expected value.
+    '''
+    expected = "\nBPM " # Valid start to any score list
+    return test_mock.getvalue().startswith(expected)
+
 @patch('bpm.read_beats', return_value=range(60))
 @patch('sys.stdout', new_callable=StringIO)
 def test_main_no_args_given(print_mock, beats_mock):
     bpm.main()
+    assert is_valid_score(print_mock)
+    
+@patch('bpm.read_beats', return_value=range(60))
+@patch('sys.stdout', new_callable=StringIO)
+@patch('argparse.ArgumentParser.parse_args',
+       return_value=argparse.Namespace(offset=-10, bpm=50))
+def test_main_negative_offset_given(arg_mock, print_mock, beat_mock):
+    bpm.main()
     expected = "\nBPM " # Valid start to any score list
     assert print_mock.getvalue().startswith(expected)
+
+def test_main_zero_offset_given():
+    pass
+
+def test_main_positive_offset_given():
+    pass
+
+def test_main_non_float_offset_given():
+    pass
+
+# Zero, negative, and near-zero bpms are tested in find_bpm
+#   and aren't checked in main()
+
+# Test this in main because there is a float conversion
+def test_main_non_float_bpm_given():
+    pass
     
-    #@patch('__builtin__.raw_input')
-#def test_read_beats_no_beats(test_mock):
-#    test_mock.side_effect = simulate_beat_input([])
-#    assert_equals(bpm.read_beats(), [])
     #parser = argparse.ArgumentParser()
     #parser.add_argument('0') # Offset
     #parser.add_argument('60') # BPM
@@ -203,13 +231,4 @@ def test_main_no_args_given(print_mock, beats_mock):
 # Main() and __main__
 # No bpm given
 # 0 bpm given
-# BPM that ranges over 0
-# Negative bpm given
-# No offset given
-# Negative offset
-# 0 offset given
-# Offset that ranges over 0
 # Irregular bpm song
-# Non-float beats
-# Non-float offset
-# Non-float bpm

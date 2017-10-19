@@ -1,4 +1,7 @@
+from StringIO import StringIO
 import bpm
+import argparse
+import sys
 # Rolling backport of unittest.mock for Python 2
 from mock import patch
 from nose.tools import assert_equals
@@ -175,15 +178,23 @@ def test_find_bpm_valid_large_offset():
 def test_find_bpm_non_numeric_offset():
     assert_raises(TypeError, bpm.find_bpm, range(10), 60, "Test")
 
-@patch('bpm.read_beats', return_value="[]")
-def test_main_no_beats(test_mock):
-    #bpm.main()
-    pass
+@patch('bpm.read_beats', return_value=[])
+@patch('sys.stdout', new_callable=StringIO)
+def test_main_no_beats(print_mock, beats_mock):
+    bpm.main()
+    assert_equals(print_mock.getvalue(), "No beats found.\n")
+
+@patch('bpm.read_beats', return_value=range(60))
+def test_main_no_args_given(_):
+    bpm.main()
     
     #@patch('__builtin__.raw_input')
 #def test_read_beats_no_beats(test_mock):
 #    test_mock.side_effect = simulate_beat_input([])
 #    assert_equals(bpm.read_beats(), [])
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument('0') # Offset
+    #parser.add_argument('60') # BPM
 
 # Test:
 # Main() and __main__
@@ -199,4 +210,3 @@ def test_main_no_beats(test_mock):
 # Non-float beats
 # Non-float offset
 # Non-float bpm
-# What to do when score is 0?

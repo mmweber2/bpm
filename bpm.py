@@ -205,13 +205,11 @@ def main():
         # User-supplied offsets are negative or zero by convention
         given_offset = float(sys.argv[1])
         offset = max(given_offset, 0, 0 - given_offset)
-        print "Setting offset: ", offset
     else:
         # Detected difference for Aubio with hop limit 100; remove if not using Aubio
         offset = max(0, beats[0] - 2.2)
     if len(sys.argv) > 2 and not test_mode:
         start_bpm = float(sys.argv[2])
-        print "Setting start bpm: ", start_bpm
     else:
         # Choose 25% lowest BPM for start point
         bpms = get_bpms(beats)
